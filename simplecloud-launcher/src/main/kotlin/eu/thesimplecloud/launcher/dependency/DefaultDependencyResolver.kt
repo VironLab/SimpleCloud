@@ -23,23 +23,26 @@
 package eu.thesimplecloud.launcher.dependency
 
 import eu.thesimplecloud.api.depedency.Dependency
+import org.eclipse.aether.artifact.DefaultArtifact
+import java.io.File
 
-interface IDependencyLoader {
+/**
+ * Created by IntelliJ IDEA.
+ * Date: 17.07.2020
+ * Time: 09:26
+ * @author Frederick Baier
+ */
 
-
-    /**
-     * Adds all specified dependencies to the pool of repositories.
-     */
-    fun addRepositories(vararg repositories: String)
-
-    /**
-     * Downloads all specified dependencies.
-     */
-    fun downloadDependencies(dependencies: List<Dependency>)
-
-    /**
-     * Downloads the dependencies if necessary and adds all dependencies to the class loader.
-     */
-    fun installDependencies()
-
+fun main() {
+    val repo = "https://repo.maven.apache.org/maven2/"
+    val dependencies = listOf(
+            DefaultArtifact("org.eclipse.aether:aether-impl:1.1.0"),
+            DefaultArtifact("org.eclipse.aether:aether-connector-basic:1.1.0"),
+            DefaultArtifact("org.eclipse.aether:aether-transport-file:1.1.0"),
+            DefaultArtifact("org.apache.maven:maven-aether-provider:3.3.9")
+    )
+    val results = DependencyLoader.instance.loadDependencies(listOf(repo), dependencies)
+    val resultDependencies = results.map { it.artifact }.map { Dependency(it.groupId, it.artifactId, it.version) }
+    val file = File("dependencies.txt")
+    file.writeText(resultDependencies.joinToString("\n") { "${it.groupId}:${it.artifactId}:${it.version}" })
 }

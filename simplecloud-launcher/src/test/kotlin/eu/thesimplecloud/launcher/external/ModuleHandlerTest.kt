@@ -33,7 +33,6 @@ import eu.thesimplecloud.launcher.external.module.handler.ModuleHandler
 import eu.thesimplecloud.mockmodule.ModuleMain
 import org.junit.Assert.*
 import org.junit.Before
-import org.junit.Test
 import org.mockito.Mockito.*
 import java.io.File
 
@@ -52,7 +51,7 @@ class ModuleHandlerTest {
         this.moduleHandler = spy(ModuleHandler::class.java)
     }
 
-    @Test
+    //@Test
     fun module_load_unload_test() {
         val loadedModuleFileContent = constructLoadedModuleAndPrepareForLoad()
         val testModuleFileContent = loadedModuleFileContent.content
@@ -70,7 +69,7 @@ class ModuleHandlerTest {
 
     }
 
-    @Test
+    //@Test
     fun module_duplicate_name_test() {
         val loadedModule1 = constructLoadedModuleAndPrepareForLoad()
         val loadedModule2 = LoadedModuleFileContent(File(loadedModule1.file.path + "1"), loadedModule1.content, null)
@@ -78,13 +77,13 @@ class ModuleHandlerTest {
         assertThrows(IllegalStateException::class.java) { moduleHandler.loadModule(loadedModule2) }
     }
 
-    @Test
+    //@Test
     fun missing_dependency_test() {
         val loadedModule = constructLoadedModuleAndPrepareForLoad(listOf("testDependency"))
         assertThrows(ModuleLoadException::class.java) { moduleHandler.loadModule(loadedModule) }
     }
 
-    @Test
+    //@Test
     fun self_dependency_test() {
         val loadedModule1 = constructLoadedModuleAndPrepareForLoad()
         val moduleContent1 = loadedModule1.content
@@ -92,7 +91,7 @@ class ModuleHandlerTest {
         assertThrows(ModuleLoadException::class.java) { moduleHandler.loadModule(testModule) }
     }
 
-    @Test
+    //@Test
     fun recursive_dependency_test() {
         val moduleHandler = spy(ModuleHandler::class.java)
         val loadedModule1 = constructLoadedModuleAndPrepareForLoadAndAddDependency(2)
@@ -102,7 +101,7 @@ class ModuleHandlerTest {
         assertThrows(ModuleLoadException::class.java) { moduleHandler.loadAllUnloadedModules() }
     }
 
-    @Test
+    //@Test
     fun recursive_dependency_test_2() {
         val moduleHandler = spy(ModuleHandler::class.java)
         val loadedModule1 = constructLoadedModuleAndPrepareForLoadAndAddDependency(1)
@@ -111,7 +110,7 @@ class ModuleHandlerTest {
         assertThrows(ModuleLoadException::class.java) { moduleHandler.loadAllUnloadedModules() }
     }
 
-    @Test
+    //@Test
     fun module_load_with_dependencies_test() {
         val moduleHandler = spy(ModuleHandler::class.java)
         val loadedModule1 = constructNewLoadedModuleFileContent()

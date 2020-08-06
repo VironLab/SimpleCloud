@@ -156,7 +156,14 @@ class Wrapper : ICloudApplication {
             } catch (e: InterruptedException) {
             }
         }
-        this.communicationClient.sendUnitQuery(PacketOutCloudClientLogin(NetworkComponentType.WRAPPER), 4000).syncUninterruptibly()
+        val promise = this.communicationClient.sendUnitQuery(PacketOutCloudClientLogin(NetworkComponentType.WRAPPER), 5000)
+        promise.awaitUninterruptibly()
+        if (!promise.isSuccess) {
+            Launcher.instance.logger.exception(promise.cause())
+            resetWrapperAndStartReconnectLoop(launcherConfig)
+            return
+        }
+
 
         if (!isStartedInManagerDirectory()) {
             val templateClient = NettyClient(launcherConfig.host, launcherConfig.port + 1, ConnectionHandlerImpl())

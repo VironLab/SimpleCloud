@@ -34,6 +34,6 @@ class LauncherMain {
 fun main(args: Array<String>) {
     LauncherMain.specifiedArguments = args
     println("Starting launcher...")
-    LauncherDependencyLoader().loadLauncherDependencies()
+    LauncherDependencyLoader().loadDependenciesToStart()
     LauncherStartArguments().main(args)
 }

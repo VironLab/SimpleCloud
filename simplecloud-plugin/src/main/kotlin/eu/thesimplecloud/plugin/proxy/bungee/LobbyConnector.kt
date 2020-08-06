@@ -38,6 +38,4 @@ class LobbyConnector {
         if (serviceToConnectTo == null) println("WARNING: Lobby server was null.")
         return serviceToConnectTo?.let { ProxyServer.getInstance().getServerInfo(it.getName()) }
     }
-
-
 }

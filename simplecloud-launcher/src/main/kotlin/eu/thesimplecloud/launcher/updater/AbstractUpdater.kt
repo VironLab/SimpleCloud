@@ -23,7 +23,6 @@
 package eu.thesimplecloud.launcher.updater
 
 import eu.thesimplecloud.api.depedency.Dependency
-import eu.thesimplecloud.launcher.dependency.DependencyLoader
 import java.io.File
 import java.util.jar.JarFile
 
@@ -40,7 +39,7 @@ abstract class AbstractUpdater(
     override fun getVersionToInstall(): String? {
         if (!wasVersionToInstallCalled) {
             this.wasVersionToInstallCalled = true
-            this.versionToInstall = DependencyLoader().getLatestVersionOfDependencyFromWeb(groupId, artifactId, getRepositoryURL())
+            this.versionToInstall = NewestVersionFinder().findNewestVersion(groupId, artifactId, getRepositoryURL())
         }
         return this.versionToInstall
     }

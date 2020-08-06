@@ -137,8 +137,8 @@ class CloudServiceProcess(private val cloudService: ICloudService) : ICloudServi
     }
 
     private fun getStartCommandArgs(jarFile: File): Array<String> {
-        val allDependencyPaths = DependencyLoader.INSTANCE.getLoadedDependencies().filter { it.groupId != "eu.thesimplecloud.clientserverapi" }.map { it.getDownloadedFile().absolutePath }
-        val classPathValueList = listOf(jarFile.absolutePath).union(allDependencyPaths)
+        val allDependencyPaths = DependencyLoader.instance.getLoadedDependencies().filter { it.groupId != "eu.thesimplecloud.clientserverapi" }.map { it.getDownloadedFile() }
+        val classPathValueList = listOf(jarFile.absolutePath)//.union(allDependencyPaths)
         val separator = if (CloudAPI.instance.isWindows()) ";" else ":"
         val beginAndEnd = if (CloudAPI.instance.isWindows()) "\"" else ""
         val classPathValue = beginAndEnd + classPathValueList.joinToString(separator) + beginAndEnd

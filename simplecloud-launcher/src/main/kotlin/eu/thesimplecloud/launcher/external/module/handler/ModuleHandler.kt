@@ -146,10 +146,9 @@ open class ModuleHandler(
     }
 
     private fun installRequiredDependencies(cloudModuleFileContent: ModuleFileContent) {
-        val dependencyLoader = DependencyLoader.INSTANCE
-        dependencyLoader.addRepositories(cloudModuleFileContent.repositories)
-        dependencyLoader.addDependencies(cloudModuleFileContent.dependencies)
-        dependencyLoader.installDependencies()
+        val dependencyLoader = DependencyLoader.instance
+        val dependencies = cloudModuleFileContent.dependencies.map { it.toAetherArtifact() }
+        dependencyLoader.loadDependencies(cloudModuleFileContent.repositories, dependencies)
     }
 
     private fun loadModuleClassInstance(classLoader: ClassLoader, mainClassName: String): ICloudModule {

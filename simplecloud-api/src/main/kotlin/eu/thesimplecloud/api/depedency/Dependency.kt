@@ -23,61 +23,64 @@
 package eu.thesimplecloud.api.depedency
 
 import eu.thesimplecloud.api.utils.Downloader
-import eu.thesimplecloud.api.utils.WebContentLoader
+import org.eclipse.aether.artifact.Artifact
+import org.eclipse.aether.artifact.DefaultArtifact
 import java.io.File
 import java.io.IOException
 
 data class Dependency(val groupId: String, val artifactId: String, val version: String) {
 
-    companion object {
-
-        val DEPENDENCIES_DIR = File("dependencies/")
-
-        val POM_DIR = File("dependencies/poms/")
-    }
-
     fun getName() = "$artifactId-$version"
 
-    fun getDownloadURL(repoUrl: String): String {
-        return getUrlWithoutExtension(repoUrl) + ".jar"
+    fun downloadIfNecessary(repoUrl: String) {
+        val fileInRepo = getDownloadedFile()
+        if (!fileInRepo.exists())
+            downloadFile(repoUrl)
+    }
+
+    private fun downloadFile(repoUrl: String) {
+        Downloader().userAgentDownload(getDownloadURL(repoUrl), getDownloadedFile())
     }
 
     fun getDownloadedFile(): File {
-        return File(DEPENDENCIES_DIR, "${getName()}.jar")
+        val replacedGroupId = groupId.replace(".", "/")
+        val replacedArtifactId= artifactId.replace(".", "/")
+        val path = "$replacedGroupId/$replacedArtifactId/$version/$artifactId-$version.jar"
+        return File(LOCAL_REPO, path)
     }
 
-    fun getDownloadedPomFile(): File {
-        return File(POM_DIR, "$groupId-$artifactId.pom")
+    private fun getDownloadURL(repoUrl: String): String {
+        return getUrlWithoutExtension(repoUrl) + ".jar"
     }
 
-    fun getDownloadedLastVersionFile(): File {
-        return File(POM_DIR, "$groupId-$artifactId.lastVersion")
+    private fun getMainURL(repoUrl: String): String {
+        return repoUrl + groupId.replace("\\.".toRegex(), "/") + "/" + artifactId + "/"
     }
 
-
-    @Throws(IOException::class)
-    fun download(repoUrl: String) {
-        return download(repoUrl, getDownloadedFile())
+    private fun getUrlWithoutExtension(repoUrl: String): String {
+        return getMainURL(repoUrl) + version + "/" + artifactId + "-" + version
     }
+
     @Throws(IOException::class)
     fun download(repoUrl: String, downloadFile: File) {
         Downloader().userAgentDownload(this.getDownloadURL(repoUrl), downloadFile)
     }
 
-    fun getPomContent(repoUrl: String): String? {
-        return WebContentLoader().loadContent(getUrlWithoutExtension(repoUrl) + ".pom")
+    fun toAetherArtifact(): DefaultArtifact {
+        return DefaultArtifact("$groupId:$artifactId:$version")
     }
 
-    fun getMetaDataContent(repoUrl: String): String? {
-        return WebContentLoader().loadContent(getMainURL(repoUrl) + "maven-metadata.xml")
-    }
+    companion object {
+        fun fromAetherArtifact(artifact: Artifact): Dependency {
+            return Dependency(artifact.groupId, artifact.artifactId, artifact.version)
+        }
 
-    fun getMainURL(repoUrl: String): String {
-        return repoUrl + groupId.replace("\\.".toRegex(), "/") + "/" + artifactId + "/"
-    }
+        fun fromSingleString(string: String): Dependency {
+            val array = string.split(":")
+            return Dependency(array[0], array[1], array[2])
+        }
 
-    fun getUrlWithoutExtension(repoUrl: String): String {
-        return getMainURL(repoUrl) + version + "/" + artifactId + "-" + version
+        const val LOCAL_REPO = "local-repo/"
     }
 
 }
