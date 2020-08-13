@@ -92,6 +92,11 @@ subprojects {
         from sourceSets.main.allSource
     }
 
+    task copyDependencies(type: Copy) {
+        from configurations.compileOnly
+        into 'build/dependencies'
+    }
+
     dependencies {
         testCompile group: 'junit', name: 'junit', version: '4.13'
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
