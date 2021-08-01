@@ -1,0 +1,26 @@
+{
+  "plugins": [
+    {
+      "loader": "java_plain",
+      "id": "simplecloud_plugin",
+      "name": "SimpleCloud-Plugin",
+      "version": "1.0",
+      "main-class": "eu.thesimplecloud.plugin.server.sponge.CloudSpongePlugin",
+      "description": "SimpleCloud plugin",
+      "contributors": [
+        {
+          "name": "SimpleCloud",
+          "description": "SimpleCloud"
+        }
+      ],
+      "dependencies": [
+        {
+          "id": "spongeapi",
+          "version": "8.0.0",
+          "load-order": "AFTER",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
