@@ -105,6 +105,7 @@ class CloudVelocityPlugin @Inject constructor(val proxyServer: ProxyServer) : IC
     }
 
     override fun addServiceToProxy(cloudService: ICloudService) {
+        println("Try to register CloudService ${cloudService.getName()}-${cloudService.getUniqueId()}")
         if (proxyServer.getServer(cloudService.getName()).isPresent) {
             throw IllegalArgumentException("Service is already registered!")
         }

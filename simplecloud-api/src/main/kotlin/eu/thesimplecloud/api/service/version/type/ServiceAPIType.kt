@@ -34,6 +34,11 @@ enum class ServiceAPIType(
 ) {
 
     /**
+     * Represents a jar with the sponge api
+     */
+    SPONGE(MinecraftEdition.JAVA, ServiceVersionType.SERVER),
+
+    /**
      * Represents a jar with the spigot api
      */
     SPIGOT(MinecraftEdition.JAVA, ServiceVersionType.SERVER),

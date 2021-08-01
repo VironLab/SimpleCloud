@@ -67,14 +67,14 @@ class CloudServiceProcess(private val cloudService: ICloudService) : ICloudServi
         serviceDirectory.copyTemplateFilesAndModules()
 
         val serviceConfigurator = Wrapper.instance.serviceConfigurationManager
-                .getServiceConfigurator(cloudService.getServiceVersion().serviceAPIType)
+            .getServiceConfigurator(cloudService.getServiceVersion().serviceAPIType)
         serviceConfigurator
-                ?: throw IllegalStateException("No ServiceConfiguration found by api type: ${cloudService.getServiceVersion().serviceAPIType}")
+            ?: throw IllegalStateException("No ServiceConfiguration found by api type: ${cloudService.getServiceVersion().serviceAPIType}")
 
         serviceConfigurator.configureService(cloudService, this.serviceDirectory.serviceTmpDirectory)
         val jarFile = Wrapper.instance.serviceVersionLoader.loadVersionFile(cloudService.getServiceVersion())
         val processBuilder = createProcessBuilder(jarFile)
-                .directory(this.serviceDirectory.serviceTmpDirectory)
+            .directory(this.serviceDirectory.serviceTmpDirectory)
         val process = processBuilder.start()
         this.process = process
 
@@ -83,9 +83,19 @@ class CloudServiceProcess(private val cloudService: ICloudService) : ICloudServi
         while (process.isAlive) {
             try {
                 val s = bufferedReader.readLine() ?: continue
-                if (!s.equals("", ignoreCase = true) && !s.equals(" ", ignoreCase = true) && !s.equals(">", ignoreCase = true)
-                        && !s.equals(" >", ignoreCase = true) && !s.contains("InitialHandler has pinged")) {
-                    Wrapper.instance.connectionToManager.sendUnitQuery(PacketOutScreenMessage(NetworkComponentType.SERVICE, getCloudService(), s))
+                if (!s.equals("", ignoreCase = true) && !s.equals(" ", ignoreCase = true) && !s.equals(
+                        ">",
+                        ignoreCase = true
+                    )
+                    && !s.equals(" >", ignoreCase = true) && !s.contains("InitialHandler has pinged")
+                ) {
+                    Wrapper.instance.connectionToManager.sendUnitQuery(
+                        PacketOutScreenMessage(
+                            NetworkComponentType.SERVICE,
+                            getCloudService(),
+                            s
+                        )
+                    )
                         .awaitUninterruptibly()
                     //Launcher.instance.logger.console("[${cloudService.getName()}]$s")
                 }
@@ -153,9 +163,9 @@ class CloudServiceProcess(private val cloudService: ICloudService) : ICloudServi
 
     private fun getStartCommandArgs(jarFile: File): Array<String> {
         val allDependencyPaths = DependencyLoader.INSTANCE.getInstalledDependencies()
-                .filter { it.groupId != "org.slf4j" }
-                .filter { it.groupId != "eu.thesimplecloud.clientserverapi" }
-                .map { it.getDownloadedFile().absolutePath }
+            .filter { it.groupId != "org.slf4j" }
+            .filter { it.groupId != "eu.thesimplecloud.clientserverapi" }
+            .map { it.getDownloadedFile().absolutePath }
         val classPathValueList = listOf(jarFile.absolutePath).union(allDependencyPaths)
         val separator = if (CloudAPI.instance.isWindows()) ";" else ":"
         val beginAndEnd = if (CloudAPI.instance.isWindows()) "\"" else ""
@@ -168,9 +178,18 @@ class CloudServiceProcess(private val cloudService: ICloudService) : ICloudServi
 
         jvmArguments.forEach { commands.addAll(it.arguments) }
 
-        val startArguments = arrayListOf("-Dcom.mojang.eula.agree=true", "-Djline.terminal=jline.UnsupportedTerminal",
-                "-Xms" + cloudService.getMaxMemory() + "M", "-Xmx" + cloudService.getMaxMemory() + "M", "-cp", classPathValue,
-                ManifestLoader.getMainClassFromManifestFile(jarFile))
+        val startArguments = arrayListOf(
+            "-Dcom.mojang.eula.agree=true",
+            "-Djline.terminal=jline.UnsupportedTerminal",
+            "-Xms" + cloudService.getMaxMemory() + "M",
+            "-Xmx" + cloudService.getMaxMemory() + "M",
+            "-cp",
+            classPathValue,
+            ManifestLoader.getMainClassFromManifestFile(jarFile)
+        )
+        if (cloudService.getServiceVersion().serviceAPIType == ServiceAPIType.SPONGE) {
+            commands.add("-javaagent:${jarFile.absolutePath}")
+        }
         commands.addAll(startArguments)
 
         if (cloudService.getServiceVersion().serviceAPIType == ServiceAPIType.SPIGOT) {
@@ -202,8 +221,8 @@ class CloudServiceProcess(private val cloudService: ICloudService) : ICloudServi
             }, 7, TimeUnit.SECONDS)
         }
         return cloudListener<CloudServiceUnregisteredEvent>()
-                .addCondition { it.cloudService == this.cloudService }
-                .toUnitPromise()
+            .addCondition { it.cloudService == this.cloudService }
+            .toUnitPromise()
     }
 
     override fun executeCommand(command: String) {

@@ -26,6 +26,7 @@ import eu.thesimplecloud.api.CloudAPI
 import eu.thesimplecloud.api.directorypaths.DirectoryPaths
 import eu.thesimplecloud.api.service.ICloudService
 import eu.thesimplecloud.api.service.ServiceType
+import eu.thesimplecloud.api.service.version.type.ServiceAPIType
 import eu.thesimplecloud.api.template.ITemplate
 import eu.thesimplecloud.base.wrapper.startup.Wrapper
 import eu.thesimplecloud.clientserverapi.client.NettyClient
@@ -33,9 +34,9 @@ import eu.thesimplecloud.jsonlib.JsonLib
 import eu.thesimplecloud.launcher.external.module.LoadedModuleFileContent
 import eu.thesimplecloud.launcher.external.module.ModuleCopyType
 import eu.thesimplecloud.launcher.utils.FileCopier
-import org.apache.commons.io.FileUtils
 import java.io.File
 import java.io.IOException
+import org.apache.commons.io.FileUtils
 
 class ServiceDirectory(private val cloudService: ICloudService) {
 
@@ -74,21 +75,31 @@ class ServiceDirectory(private val cloudService: ICloudService) {
             templateDirectories.filter { it.exists() }.forEach { FileUtils.copyDirectory(it, this.serviceTmpDirectory) }
         }
 
+
         if (cloudService.getServiceType() == ServiceType.PROXY) {
             val destServerIconFile = File(this.serviceTmpDirectory, "/server-icon.png")
             if (!destServerIconFile.exists())
                 FileCopier.copyFileOutOfJar(destServerIconFile, "/files/server-icon.png")
         }
 
-        val cloudPluginFile = File(this.serviceTmpDirectory, "/plugins/SimpleCloud-Plugin.jar")
+        val pluginDirName =
+            if (cloudService.getServiceVersion().serviceAPIType == ServiceAPIType.SPONGE) "mods" else "plugins"
+        val cloudPluginFile = File(this.serviceTmpDirectory, "/$pluginDirName/SimpleCloud-Plugin.jar")
         FileCopier.copyFileOutOfJar(cloudPluginFile, "/SimpleCloud-Plugin.jar")
 
         generateServiceFile()
     }
 
     private fun copyModules() {
+        val pluginDirName =
+            if (cloudService.getServiceVersion().serviceAPIType == ServiceAPIType.SPONGE) "mods" else "plugins"
         val modulesForService = getModulesForService()
-        modulesForService.forEach { FileUtils.copyFile(it.file, File(this.serviceTmpDirectory, "/plugins/" + it.file.name)) }
+        modulesForService.forEach {
+            FileUtils.copyFile(
+                it.file,
+                File(this.serviceTmpDirectory, "/$pluginDirName/${it.file.name}")
+            )
+        }
         this.copiedModulesAsPlugins = getModuleFilesInService()
     }
 
@@ -101,7 +112,7 @@ class ServiceDirectory(private val cloudService: ICloudService) {
 
     private fun getModulesForService(): List<LoadedModuleFileContent> {
         val modulesByCopyType = Wrapper.instance.existingModules
-                .filter { it.content.moduleCopyType != ModuleCopyType.NONE }.toMutableList()
+            .filter { it.content.moduleCopyType != ModuleCopyType.NONE }.toMutableList()
         if (!cloudService.isLobby())
             modulesByCopyType.removeIf { it.content.moduleCopyType == ModuleCopyType.LOBBY }
         if (!cloudService.isProxy())
@@ -116,16 +127,16 @@ class ServiceDirectory(private val cloudService: ICloudService) {
 
     fun getModuleFilesInService(): List<File> {
         val modulesForService = getModulesForService()
-        return modulesForService.map { File(this.serviceTmpDirectory, "/plugins/" + it.file.name) }
+        return modulesForService.map { File(this.serviceTmpDirectory, "/${if (cloudService.getServiceVersion().serviceAPIType == ServiceAPIType.SPONGE) "mods" else "plugins"}/" + it.file.name) }
     }
 
     private fun generateServiceFile() {
         val communicationClient = Wrapper.instance.communicationClient
         communicationClient as NettyClient
         JsonLib.empty().append("managerHost", communicationClient.getHost())
-                .append("managerPort", communicationClient.getPort())
-                .append("serviceName", cloudService.getName())
-                .saveAsFile(File(this.serviceTmpDirectory, "SIMPLE-CLOUD.json"))
+            .append("managerPort", communicationClient.getPort())
+            .append("serviceName", cloudService.getName())
+            .saveAsFile(File(this.serviceTmpDirectory, "SIMPLE-CLOUD.json"))
     }
 
     private fun getDirectoriesOfTemplateAndSubTemplates(template: ITemplate): Set<File> {

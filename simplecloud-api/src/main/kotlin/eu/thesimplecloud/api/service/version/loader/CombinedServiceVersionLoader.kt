@@ -32,7 +32,7 @@ import eu.thesimplecloud.api.service.version.ServiceVersion
  */
 object CombinedServiceVersionLoader : IServiceVersionLoader {
 
-    private val loaders = listOf(ServiceVersionWebLoader(), LocalServiceVersionHandler())
+    private val loaders = listOf(ServiceVersionWebLoader(), LocalServiceVersionHandler(), SpongeServiceVersionHandler())
 
     override fun loadVersions(): List<ServiceVersion> {
         return loaders.map { it.loadVersions() }.flatten()

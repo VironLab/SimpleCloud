@@ -11,6 +11,7 @@ import eu.thesimplecloud.plugin.startup.CloudPlugin
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.slf4j.Logger
 import org.spongepowered.api.Game
 import org.spongepowered.api.Server
 import org.spongepowered.api.event.Listener
@@ -21,13 +22,16 @@ import org.spongepowered.plugin.jvm.Plugin
 import kotlin.reflect.KClass
 
 @Plugin("simplecloud_plugin")
-class CloudSpongePlugin @Inject constructor(val pluginContainer: PluginContainer) : ICloudServerPlugin {
+class CloudSpongePlugin @Inject constructor(val pluginContainer: PluginContainer, val logger: Logger) :
+    ICloudServerPlugin {
 
     lateinit var game: Game
 
     init {
         instance = this
-        instance = this
+        logger.info("______________________________________________________")
+        logger.info("    Initialized SimpleCloud-Plugin on SpongeServer   ")
+        logger.info("______________________________________________________")
     }
 
     companion object {
