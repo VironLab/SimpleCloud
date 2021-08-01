@@ -52,7 +52,8 @@ import kotlin.reflect.KClass
  * Time: 21:11
  */
 
-@Plugin(id = "simplecloud_plugin")
+
+@Plugin(id = "simplecloud_plugin", name = "SimpleCloud-Plugin", version = "1.0", authors = ["Fllip"])
 class CloudVelocityPlugin @Inject constructor(val proxyServer: ProxyServer) : ICloudProxyPlugin {
 
     companion object {

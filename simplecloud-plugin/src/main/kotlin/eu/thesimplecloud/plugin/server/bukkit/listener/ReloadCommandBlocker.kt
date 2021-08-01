@@ -20,22 +20,34 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package eu.thesimplecloud.plugin.extension
+package eu.thesimplecloud.plugin.server.bukkit.listener
 
-import eu.thesimplecloud.plugin.proxy.ICloudProxyPlugin
-import eu.thesimplecloud.plugin.proxy.bungee.CloudBungeePlugin
-import eu.thesimplecloud.plugin.server.bukkit.CloudSpigotPlugin
-import eu.thesimplecloud.plugin.startup.CloudPlugin
-import java.util.concurrent.TimeUnit
-import net.md_5.bungee.api.ProxyServer
-import org.bukkit.Bukkit
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerCommandPreprocessEvent
 
-fun syncBukkit(function: () -> Unit) = Bukkit.getScheduler().runTask(CloudSpigotPlugin.instance, function)
+/**
+ * Created by IntelliJ IDEA.
+ * Date: 24.12.2020
+ * Time: 10:50
+ * @author Frederick Baier
+ */
+class ReloadCommandBlocker : Listener {
 
-fun syncService(function: () -> Unit) {
-    if (CloudPlugin.instance.cloudServicePlugin is ICloudProxyPlugin) {
-        ProxyServer.getInstance().scheduler.schedule(CloudBungeePlugin.instance, function, 0, TimeUnit.MILLISECONDS)
-    } else {
-        Bukkit.getScheduler().runTask(CloudSpigotPlugin.instance, function)
+    @EventHandler
+    fun handle(event: PlayerCommandPreprocessEvent) {
+        val message = event.message
+        val player = event.player
+        if (message.equals("/rl", true) ||
+            message.equals("/reload", true) ||
+            message.equals("/rl confirm", true) ||
+            message.equals("/reload confirm", true)
+        ) {
+            if (player.hasPermission("bukkit.command.reload")) {
+                event.isCancelled = true
+                player.sendMessage("§cCloud-Servers cannot be reloaded")
+            }
+        }
     }
+
 }

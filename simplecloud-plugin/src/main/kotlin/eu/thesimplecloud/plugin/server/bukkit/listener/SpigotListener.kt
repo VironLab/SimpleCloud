@@ -20,34 +20,40 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-package eu.thesimplecloud.plugin.server.listener
+package eu.thesimplecloud.plugin.server.bukkit.listener
 
+import eu.thesimplecloud.plugin.server.ServerEventHandler
+import org.bukkit.Bukkit
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerCommandPreprocessEvent
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerKickEvent
+import org.bukkit.event.player.PlayerLoginEvent
+import org.bukkit.event.player.PlayerQuitEvent
 
-/**
- * Created by IntelliJ IDEA.
- * Date: 24.12.2020
- * Time: 10:50
- * @author Frederick Baier
- */
-class ReloadCommandBlocker : Listener {
+class SpigotListener : Listener {
 
     @EventHandler
-    fun handle(event: PlayerCommandPreprocessEvent) {
-        val message = event.message
-        val player = event.player
-        if (message.equals("/rl", true) ||
-            message.equals("/reload", true) ||
-            message.equals("/rl confirm", true) ||
-            message.equals("/reload confirm", true)
-        ) {
-            if (player.hasPermission("bukkit.command.reload")) {
-                event.isCancelled = true
-                player.sendMessage("§cCloud-Servers cannot be reloaded")
-            }
+    fun on(event: PlayerLoginEvent) {
+        val msg = ServerEventHandler.handleLogin(event.player.uniqueId, event.realAddress.hostAddress)
+        if (msg != null) {
+            event.disallow(PlayerLoginEvent.Result.KICK_OTHER, msg)
         }
     }
+
+    @EventHandler
+    fun onJoin(event: PlayerJoinEvent) =
+        ServerEventHandler.updateCurrentOnlineCountTo(Bukkit.getOnlinePlayers().size)
+
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun on(event: PlayerQuitEvent) =
+        ServerEventHandler.handleDisconnected(event.player.uniqueId, Bukkit.getServer().onlinePlayers.size - 1)
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun on(event: PlayerKickEvent) =
+        ServerEventHandler.handleDisconnected(event.player.uniqueId, Bukkit.getServer().onlinePlayers.size - 1)
+
 
 }
